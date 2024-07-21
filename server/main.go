@@ -28,7 +28,7 @@ func main() {
 
 	router := chi.NewMux()
 	corsHandler := cors.New(cors.Options{
-		AllowedOrigins:   []string{fmt.Sprintf("https://%s", os.Getenv("ACCEPTED_URL"))},
+		AllowedOrigins:   []string{fmt.Sprintf("http://%s", os.Getenv("ACCEPTED_URL"))},
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
 		ExposedHeaders:   []string{"Link"},
@@ -38,13 +38,13 @@ func main() {
 	router.Use(corsHandler.Handler)
 
 	// routes
-	router.Post("/signup", handlers.HandleSignup)
-	router.Post("/login", handlers.HandleLogin)
+	router.Post("/api/signup", handlers.HandleSignup)
+	router.Post("/api/login", handlers.HandleLogin)
 
 	// routes that use jwt authentication
 	router.Group(func(auth chi.Router) {
 		auth.Use(handlers.JwtMiddleware)
-		auth.Get("/user", handlers.GetUser)
+		auth.Get("/api/current-user", handlers.GetUser)
 
 	})
 

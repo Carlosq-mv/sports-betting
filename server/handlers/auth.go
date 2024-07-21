@@ -23,7 +23,11 @@ func HandleSignup(w http.ResponseWriter, r *http.Request) {
 	// check that all inputs are not empty
 	if user.Password == "" || user.Username == "" || user.Email == "" || user.FirstName == "" || user.LastName == "" {
 		slog.Error("fill all input fields", "url", r.URL.Path)
-		http.Error(w, "Please fill all input fields", http.StatusBadRequest)
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]string{
+			"empty": "Please fill all input fields",
+		})
+		// http.Error(w, "Please fill all input fields", http.StatusBadRequest)
 		return
 	}
 
@@ -36,28 +40,44 @@ func HandleSignup(w http.ResponseWriter, r *http.Request) {
 	msg, ok := utils.ValidPassword(user.Password)
 	if !ok {
 		slog.Error("not a valid password", "url", r.URL.Path)
-		http.Error(w, msg, http.StatusBadRequest)
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]string{
+			"password": msg,
+		})
+		// http.Error(w, msg, http.StatusBadRequest)
 		return
 	}
 
 	// check if it is a valid email format
 	if !utils.ValidEmail(user.Email) {
 		slog.Error("not a valid email", "url", r.URL.Path)
-		http.Error(w, "Please enter a valid email", http.StatusBadRequest)
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]string{
+			"email": "Please enter a valid email",
+		})
+		// http.Error(w, "Please enter a valid email", http.StatusBadRequest)
 		return
 	}
 
 	// check if email is already in use
 	if utils.EmailExists(user.Email, context.Background()) {
 		slog.Error("email already exsists", "url", r.URL.Path)
-		http.Error(w, "Email already exsists. Please try again with unique email", http.StatusBadRequest)
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]string{
+			"email": "Email already exsists. Please try again with unique email",
+		})
+		// http.Error(w, "Email already exsists. Please try again with unique email", http.StatusBadRequest)
 		return
 	}
 
 	// check if username is already in use
 	if utils.UsernameExists(user.Username, context.Background()) {
 		slog.Error("username already exsists", "url", r.URL.Path)
-		http.Error(w, "Username already exsists. Please try again with unique username", http.StatusBadRequest)
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]string{
+			"username": "Username already exsists. Please try again with unique username",
+		})
+		// http.Error(w, "Username already exsists. Please try again with unique username", http.StatusBadRequest)
 		return
 	}
 
