@@ -1,12 +1,15 @@
 import React, { useState } from 'react';
+import { useContext } from 'react';
 
 import FormField from '@/components/FormField'
 import AxiosInstance from '@/constants/api';
 import images from '@/constants/images';
 import icons from '@/constants/icons';
+import { AuthContext } from '@/context/AuthProvider';
 
 
 function Signup() {
+  const { user, isLogged } = useContext(AuthContext);
   const [load, setLoad] = useState(true);
   const [error, setError] = useState({
     username: "",
@@ -65,6 +68,13 @@ function Signup() {
         setError(newErrors);
       })
   };
+
+  // TODO: fix this
+  useEffect(() => {
+    if (user && isLogged) {
+      navigate("/home");
+    }
+  }, [user, isLogged, navigate])
 
   return (
     <>

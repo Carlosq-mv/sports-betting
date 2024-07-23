@@ -1,12 +1,17 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useContext } from 'react';
 
 import FormField from '@/components/FormField'
 import AxiosInstance from '@/constants/api';
 import images from '@/constants/images';
 import icons from '@/constants/icons';
+import { Navigate, useNavigate } from 'react-router-dom';
+import { AuthContext } from '@/context/AuthProvider';
 
 
 function Login() {
+  const { setUser, setIsLogged, user, isLogged, loading } = useContext(AuthContext);
+  const navigate = useNavigate();
   const [load, setLoad] = useState(true);
   const [error, setError] = useState({
     username: "",
@@ -39,6 +44,11 @@ function Login() {
           empty: ""
         });
         localStorage.setItem("jwtToken", res.data.token);
+
+        setUser(form);
+        setIsLogged(true);
+
+        navigate("/home");
       })
       .catch(err => {
         console.error(err.response.data);
@@ -54,6 +64,14 @@ function Login() {
         setError(newErrors);
       })
   };
+  
+  // TODO: fix this
+  useEffect(() => {
+    console.log(user, isLogged, loading)
+    if(user && isLogged && !loading) {
+      navigate("/home");
+    }
+  }, [user, isLogged, loading,  navigate])
 
   return (
     <>
