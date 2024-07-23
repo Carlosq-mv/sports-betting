@@ -13,42 +13,77 @@ const AuthProvider = ({ children }) => {
   const location = useLocation();
 
   useEffect(() => {
+    const ignorePath = ["/login", "/signup"];
+
     const fetchUser = async () => {
-      try {
-        const res = await AxiosInstance.get("/api/current-user");
 
-        const user = {
-          firstname: res.data.first_name,
-          lastname: res.data.last_name,
-          username: res.data.username,
-          email: res.data.email,
-          loggedIn: res.data.logged_in,
-        };
+      if (!ignorePath.includes(location.pathname)) {
+        try {
 
-        if (user && user.loggedIn) {
-          setUser(user);
-          setIsLogged(true);
-        } else {
+          const token = localStorage.getItem("jwtToken");
+
+          if (!token) {
+            setUser(null);
+            setIsLogged(false);
+            setLoading(false);
+            return;
+          }
+          const res = await AxiosInstance.get("/api/current-user");
+
+          const user = {
+            firstname: res.data.first_name,
+            lastname: res.data.last_name,
+            username: res.data.username,
+            email: res.data.email,
+            loggedIn: res.data.logged_in,
+          };
+
+          // console.log(user)
+
+          if (user) {
+            setUser(user);
+            setIsLogged(user.loggedIn);
+          } else {
+            setUser(null);
+            setIsLogged(false);
+          }
+
+        } catch (err) {
+          console.log(err);
           setUser(null);
           setIsLogged(false);
+        } finally {
+          setLoading(false);
         }
-
+      } else {
+        setLoading(false);
       }
-      catch (err) {
-        console.log(err);
+    }
+
+    fetchUser();
+  }, [location.pathname]);
+
+  const logout = async () => {
+    // set the user's logged in status as false in backend
+    try {
+      const res = await AxiosInstance.post("/api/logout");
+
+      if(res) {
         setUser(null);
         setIsLogged(false);
+        localStorage.removeItem("jwtToken");
       }
-      finally {
-        setLoading(false);
-      };
+      console.log(res.response.data);
     }
-    fetchUser();
-  }, []);
-  
+    catch (err) {
+      console.log(user);
+      console.log(err.response);
+    }
+  }
+
   return (
     <AuthContext.Provider
-      value={{ isLogged, user, setUser, loading, setIsLogged }}
+      value={{ isLogged, user, setUser, loading, setIsLogged, logout }}
     >
       {children}
     </AuthContext.Provider>
