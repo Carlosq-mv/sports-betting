@@ -124,7 +124,11 @@ func HandleLogin(w http.ResponseWriter, r *http.Request) {
 
 	if user.Username == "" || user.Password == "" {
 		slog.Error("empty fields", "url", r.URL.Path)
-		http.Error(w, "Please make sure all input fields are filled.", http.StatusBadRequest)
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]string{
+			"empty": "Please fill all input fields",
+		})
+		// http.Error(w, "Please make sure all input fields are filled.", http.StatusBadRequest)
 		return
 	}
 
@@ -133,7 +137,11 @@ func HandleLogin(w http.ResponseWriter, r *http.Request) {
 	err := db.DB.NewSelect().Model(&user).Where("username = ?", user.Username).Scan(context.Background())
 	if err != nil {
 		slog.Error("error finding user", "url", r.URL.Path)
-		http.Error(w, "Error finding user", http.StatusBadRequest)
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]string{
+			"username": "That is not a correct username",
+		})
+		// http.Error(w, "Error finding user", http.StatusBadRequest)
 		return
 	}
 
@@ -141,7 +149,11 @@ func HandleLogin(w http.ResponseWriter, r *http.Request) {
 	// check if the password is corrected based on the username
 	if !utils.CheckPasswordHash(password, user.Password) {
 		slog.Error("password is not correct", "url", r.URL.Path)
-		http.Error(w, "Password is not correct please try again", http.StatusBadRequest)
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]string{
+			"password": "Password is not correct please try again",
+		})
+		// http.Error(w, "Password is not correct please try again", http.StatusBadRequest)
 		return
 	}
 
@@ -160,7 +172,7 @@ func HandleLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	slog.Info("success creating logging user in", "user status", user.LoggedIn)
+	slog.Info("success logging user in", "user status", user.LoggedIn)
 
 	// send json response
 	w.Header().Set("Content-Type", "application/json")
@@ -168,6 +180,30 @@ func HandleLogin(w http.ResponseWriter, r *http.Request) {
 
 	json.NewEncoder(w).Encode(map[string]string{
 		"token": jwt,
+	})
+}
+
+func HandleLogout(w http.ResponseWriter, r *http.Request) {
+	// get the current user
+	user := getAuthenticatedUser(r)
+
+	// update the user as logged out
+	user.LoggedIn = false
+	_, err := db.DB.NewUpdate().Model(user).Where("id = ?", user.Id).Exec(context.Background())
+	if err != nil {
+		slog.Error("error updating logged out status for user", "user", user.Username)
+		http.Error(w, "error logging out user", http.StatusBadGateway)
+		return
+	}
+
+	slog.Info("success logging out user", "user status", user.LoggedIn)
+
+	// send json response
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusAccepted)
+
+	json.NewEncoder(w).Encode(map[string]bool{
+		"log_out": user.LoggedIn,
 	})
 }
 
