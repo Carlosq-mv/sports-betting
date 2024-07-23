@@ -45,6 +45,7 @@ func main() {
 	router.Group(func(auth chi.Router) {
 		auth.Use(handlers.JwtMiddleware)
 		auth.Get("/api/current-user", handlers.GetUser)
+		auth.Post("/api/logout", handlers.HandleLogout)
 
 	})
 
