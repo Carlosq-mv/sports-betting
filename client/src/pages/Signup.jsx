@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useContext } from 'react';
 
 import FormField from '@/components/FormField'
@@ -6,11 +6,16 @@ import AxiosInstance from '@/constants/api';
 import images from '@/constants/images';
 import icons from '@/constants/icons';
 import { AuthContext } from '@/context/AuthProvider';
+import { useNavigate } from 'react-router-dom';
 
 
 function Signup() {
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
   const { user, isLogged } = useContext(AuthContext);
   const [load, setLoad] = useState(true);
+  const [modal, showModal] = useState(false);
+
   const [error, setError] = useState({
     username: "",
     firstname: "",
@@ -33,6 +38,7 @@ function Signup() {
   };
 
   const handleSubmit = (e) => {
+    setLoading(true);
     e.preventDefault();
 
     AxiosInstance.post("/api/signup", form)
@@ -53,6 +59,7 @@ function Signup() {
           email: "",
           empty: ""
         });
+        showModal(true);
       })
       .catch(err => {
         console.error(err.response.data);
@@ -66,6 +73,9 @@ function Signup() {
         });
 
         setError(newErrors);
+      })
+      .finally(() => {
+        setLoading(false);
       })
   };
 
@@ -107,6 +117,13 @@ function Signup() {
               errorMessage={error.lastname}
             />
             <FormField
+              title="Enter birthday: yyyy-mm-dd"
+              placeholder="1900-01-01"
+              value={form.birthday}
+              handleTextChange={(e) => setForm({ ...form, birthday: e.target.value })}
+              errorMessage={error.birthday}
+            />
+            <FormField
               title="Email"
               placeholder="enter email"
               value={form.email}
@@ -143,14 +160,34 @@ function Signup() {
               className="w-full max-w-lg text-lg btn mt-4 btn-secondary items-center font-black"
               type="submit"
             >
-              signup
-              <img
-                src={icons.rightArrow}
-                className="h-7 w-7"
-              />
+              {loading ? (
+                <span className="w-7 h-7 loading loading-spinner text-warning"></span>
+              ) : (
+                <>signup <img src={icons.rightArrow} className="h-7 w-7" /> </>
+              )}
             </button>
 
           </form>
+
+          {/* Open the modal using document.getElementById('ID').showModal() method */}
+          {modal && (
+            <dialog id="modal" className="modal modal-bottom sm:modal-middle" open>
+              <div className="modal-box rounded-lg shadow-lg">
+                <h3 className="font-bold text-lg text-warning mb-4">Welcome to Ace's High Casino!</h3>
+                <p className="py-4 text-gray-500">
+                  Congratulations! You’ve successfully joined our casino family.
+                  Thank you for choosing Ace's High Casino. We’re thrilled to have you on board and wish you the best of luck!
+                  <br /><br />
+                  Happy Gaming!
+                </p>
+                <div className="modal-action">
+                  <form method="dialog">
+                    <button onClick={() => showModal(false)} className="btn btn-secondary">Close</button>
+                  </form>
+                </div>
+              </div>
+            </dialog>
+          )}
 
           <div className="mt-4">
             <p>already have an account? <a className="text-blue-500" href="/login">login here</a></p>
