@@ -14,6 +14,7 @@ type User struct {
 	LastName  string    `bun:"last_name,notnull" json:"last_name"`
 	Username  string    `bun:"username,unique,notnull" json:"username"`
 	Email     string    `bun:"email,unique,notnull" json:"email"`
+	Birthday  string    `bun:"birthday,notnull" json:"birthday"`
 	Password  string    `bun:"password,notnull" json:"password"`
 	LoggedIn  bool      `bun:"logged_in,notnull" json:"logged_in"`
 	CreatedAt time.Time `bun:"created_at,notnull,default:current_timestamp" json:"created_at"`

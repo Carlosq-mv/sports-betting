@@ -20,14 +20,36 @@ func HandleSignup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// get the user inputted birthday
+	userBday := user.Birthday
+
 	// check that all inputs are not empty
-	if user.Password == "" || user.Username == "" || user.Email == "" || user.FirstName == "" || user.LastName == "" {
+	if user.Birthday == "" || user.Password == "" || user.Username == "" || user.Email == "" || user.FirstName == "" || user.LastName == "" {
 		slog.Error("fill all input fields", "url", r.URL.Path)
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(map[string]string{
 			"empty": "Please fill all input fields",
 		})
 		// http.Error(w, "Please fill all input fields", http.StatusBadRequest)
+		return
+	}
+
+	// check the birthday input is valid
+	is21, err := utils.Is21YearsOld(userBday)
+	if err != nil {
+		slog.Error("error in birthday or parsing date", "err", err)
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]string{
+			"birthday": err.Error(),
+		})
+		return
+	}
+	if !is21 {
+		slog.Error("user is not 21 years old")
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]string{
+			"birthday": "Must be 21 years old to access High Ace's Casino",
+		})
 		return
 	}
 
