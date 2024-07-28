@@ -12,6 +12,7 @@ import { AuthContext } from '@/context/AuthProvider';
 function Login() {
   const { setUser, setIsLogged, user, isLogged, loading } = useContext(AuthContext);
   const navigate = useNavigate();
+  const [loadingLogin, setLoadingLogin] = useState(false);
   const [load, setLoad] = useState(true);
   const [error, setError] = useState({
     username: "",
@@ -29,6 +30,7 @@ function Login() {
   };
 
   const handleSubmit = (e) => {
+    setLoadingLogin(true);
     e.preventDefault();
 
     AxiosInstance.post("/api/login", form)
@@ -63,15 +65,18 @@ function Login() {
 
         setError(newErrors);
       })
+      .finally(() => {
+        setLoadingLogin(false);
+      })
   };
   
   // TODO: fix this
-  useEffect(() => {
-    console.log(user, isLogged, loading)
-    if(user && isLogged && !loading) {
-      navigate("/home");
-    }
-  }, [user, isLogged, loading,  navigate])
+  // useEffect(() => {
+  //   console.log(user, isLogged, loading)
+  //   if(user && isLogged && !loading) {
+  //     navigate("/home");
+  //   }
+  // }, [user, isLogged, loading,  navigate])
 
   return (
     <>
@@ -117,11 +122,11 @@ function Login() {
               className="w-full max-w-lg text-lg btn mt-4 btn-secondary items-center font-black"
               type="submit"
             >
-              login
-              <img
-                src={icons.rightArrow}
-                className="h-7 w-7"
-              />
+              {loadingLogin ? (
+                <span className="w-7 h-7 loading loading-spinner text-warning"></span>
+              ) : (
+                <>login <img src={icons.rightArrow} className="h-7 w-7" /> </>
+              )}
             </button>
 
         
