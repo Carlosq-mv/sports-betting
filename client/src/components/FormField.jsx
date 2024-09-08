@@ -1,5 +1,7 @@
 import React, { useState } from 'react'
-import icons from '@/constants/icons';
+import RemoveRedEyeOutlinedIcon from '@mui/icons-material/RemoveRedEyeOutlined';
+import VisibilityOffOutlinedIcon from '@mui/icons-material/VisibilityOffOutlined';
+
 
 function FormField({ title, type, value, otherStyles, placeholder, handleTextChange, errorMessage, ...props }) {
   const [showPassword, setShowPassword] = useState(false);
@@ -22,11 +24,7 @@ function FormField({ title, type, value, otherStyles, placeholder, handleTextCha
             />
             {type === "password" && (
               <button type="button" onClick={() => setShowPassword(!showPassword)}>
-                <img
-                  src={showPassword ? icons.eyeCrossed : icons.eye}
-                  className="w-7 h-7"
-                  alt={showPassword ? "Hide password" : "Show password"}
-                />
+                  {showPassword ? <VisibilityOffOutlinedIcon /> : <RemoveRedEyeOutlinedIcon />}
               </button>
             )}
           </div>
