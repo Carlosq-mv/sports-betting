@@ -2,11 +2,8 @@ package utils
 
 import (
 	"context"
-	"fmt"
 	"regexp"
-	"strconv"
 	"strings"
-	"time"
 	"unicode"
 
 	"github.com/carlosq-mv/moist-sports/pkg/db"
@@ -87,69 +84,4 @@ func ValidPassword(p string) (string, bool) {
 
 	return "", true
 
-}
-func Is21YearsOld(s string) (bool, error) {
-	intDates, err := validDate(s)
-	if err != nil {
-		return false, err
-	}
-
-	now := time.Now().Format("2006-01-02")
-	date, err := time.Parse("2006-01-02", now)
-	if err != nil {
-		return false, err
-	}
-
-	year, month, day := date.Date()
-
-	age := year - intDates[0]
-	if int(month) < intDates[1] || (int(month) == intDates[1] && day < intDates[2]) {
-		age--
-	}
-
-	if age < 21 {
-		return false, fmt.Errorf("You must be at least 21 years old to register.")
-	}
-
-	return true, nil
-}
-
-// take in the user input birthday
-// helper function for Is21YearsOld function
-func validDate(date string) ([]int, error) {
-	x := strings.Split(date, "-")
-	if len(x) != 3 {
-		return nil, fmt.Errorf("Invalid date format. Please use yyyy-mm-dd.")
-	}
-
-	year, err := strconv.Atoi(x[0])
-	if err != nil || year < 1900 || year > 2400 || len(x[0]) != 4 {
-		return nil, fmt.Errorf("Invalid year: '%d'. Enter a valid year in 'yyyy' format", year)
-	}
-
-	month, err := strconv.Atoi(x[1])
-	if err != nil || month < 1 || month > 12 || len(x[1]) != 2 {
-		return nil, fmt.Errorf("Invalid month: '%d'. Enter a month between 01 and 12", month)
-	}
-
-	day, err := strconv.Atoi(x[2])
-	if err != nil || day < 1 || day > 31 || len(x[2]) != 2 {
-		return nil, fmt.Errorf("Invalid day: '%d'. Enter a day between 01 and 31.", day)
-	}
-
-	switch month {
-	case 2:
-		if day > 29 {
-			return nil, fmt.Errorf("Month: %d, does not have more than 29 days", month)
-		}
-	case 4, 6, 9, 11:
-		if day > 30 {
-			return nil, fmt.Errorf("Month: %d, does not have more than 30 days", month)
-		}
-	default:
-		if day > 31 {
-			return nil, fmt.Errorf("Month: %d, does not have more than 31 days", month)
-		}
-	}
-	return []int{year, month, day}, nil
 }

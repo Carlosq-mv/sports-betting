@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"log/slog"
 	"net/http"
+	"time"
 
 	"github.com/carlosq-mv/moist-sports/pkg/db"
 	"github.com/carlosq-mv/moist-sports/pkg/utils"
@@ -20,36 +21,14 @@ func HandleSignup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// get the user inputted birthday
-	userBday := user.Birthday
-
 	// check that all inputs are not empty
-	if user.Birthday == "" || user.Password == "" || user.Username == "" || user.Email == "" || user.FirstName == "" || user.LastName == "" {
+	if user.Password == "" || user.Username == "" || user.Email == "" {
 		slog.Error("fill all input fields", "url", r.URL.Path)
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(map[string]string{
 			"empty": "Please fill all input fields",
 		})
 		// http.Error(w, "Please fill all input fields", http.StatusBadRequest)
-		return
-	}
-
-	// check the birthday input is valid
-	is21, err := utils.Is21YearsOld(userBday)
-	if err != nil {
-		slog.Error("error in birthday or parsing date", "err", err)
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(map[string]string{
-			"birthday": err.Error(),
-		})
-		return
-	}
-	if !is21 {
-		slog.Error("user is not 21 years old")
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(map[string]string{
-			"birthday": "Must be 21 years old to access High Ace's Casino",
-		})
 		return
 	}
 
@@ -117,7 +96,11 @@ func HandleSignup(w http.ResponseWriter, r *http.Request) {
 	res, err := db.DB.NewInsert().Model(&user).Exec(context.Background())
 	if err != nil {
 		slog.Error("error adding user to database", "url", r.URL.Path)
-		http.Error(w, "Error adding user to databse", http.StatusBadRequest)
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]string{
+			"account_err": "Can not create account at this moment",
+		})
+		// http.Error(w, "Error adding user to databse", http.StatusBadRequest)
 		return
 	}
 
@@ -196,12 +179,20 @@ func HandleLogin(w http.ResponseWriter, r *http.Request) {
 
 	slog.Info("success logging user in", "user status", user.LoggedIn)
 
+	// TODO: store in a cookie instead
+	cookie := http.Cookie{
+		Name:     "jwt",
+		Value:    jwt,
+		Expires:  time.Now().Add(time.Hour * 24),
+		HttpOnly: true,
+	}
+	http.SetCookie(w, &cookie)
+
 	// send json response
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusAccepted)
-
 	json.NewEncoder(w).Encode(map[string]string{
-		"token": jwt,
+		"token": "success",
 	})
 }
 
@@ -219,6 +210,16 @@ func HandleLogout(w http.ResponseWriter, r *http.Request) {
 	}
 
 	slog.Info("success logging out user", "user status", user.LoggedIn)
+
+	// clear the cookie that has jwt token
+	cookie := http.Cookie{
+		Name:     "jwt",
+		Value:    "",
+		Expires:  time.Now().Add(-time.Hour),
+		HttpOnly: true,
+	}
+
+	http.SetCookie(w, &cookie)
 
 	// send json response
 	w.Header().Set("Content-Type", "application/json")
