@@ -177,8 +177,6 @@ func HandleLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	slog.Info("success logging user in", "user status", user.LoggedIn)
-
 	// TODO: store in a cookie instead
 	cookie := http.Cookie{
 		Name:     "jwt",
@@ -187,6 +185,8 @@ func HandleLogin(w http.ResponseWriter, r *http.Request) {
 		HttpOnly: true,
 	}
 	http.SetCookie(w, &cookie)
+
+	slog.Info("success logging user in", "user status", user.LoggedIn)
 
 	// send json response
 	w.Header().Set("Content-Type", "application/json")
