@@ -86,7 +86,7 @@ function Signup() {
 
         <div className="w-full md:w-1/2 p-4">
 
-          <h1 className="font-black text-3xl text-center m-4 text-warning">signup to moist sports</h1>
+          <h1 className="font-black text-3xl text-center m-4 text-warning">signup to banter</h1>
 
           <form onSubmit={handleSubmit}>
             <FormField
