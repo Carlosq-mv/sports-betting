@@ -40,7 +40,6 @@ func main() {
 	// routes
 	router.Post("/api/signup", handlers.HandleSignup)
 	router.Post("/api/login", handlers.HandleLogin)
-
 	// routes that use jwt authentication
 	router.Group(func(auth chi.Router) {
 		auth.Use(handlers.JwtMiddleware)

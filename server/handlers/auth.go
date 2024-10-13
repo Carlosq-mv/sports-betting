@@ -183,6 +183,8 @@ func HandleLogin(w http.ResponseWriter, r *http.Request) {
 		Value:    jwt,
 		Expires:  time.Now().Add(time.Hour * 24),
 		HttpOnly: true,
+		Secure:   true,
+		SameSite: http.SameSiteNoneMode,
 	}
 	http.SetCookie(w, &cookie)
 

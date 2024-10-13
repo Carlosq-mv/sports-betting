@@ -1,44 +1,29 @@
 import { createContext, useEffect, useState } from "react";
 import AxiosInstance from "@/constants/api";
-import { useLocation } from "react-router-dom";
-
+import { useLocation, useNavigate } from "react-router-dom";
 
 const AuthContext = createContext();
 
 const AuthProvider = ({ children }) => {
+  const nav = useNavigate();
   const [isLogged, setIsLogged] = useState(false);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const location = useLocation();
 
   useEffect(() => {
-    const ignorePath = ["/login", "/signup"];
-
     const fetchUser = async () => {
 
-      if (!ignorePath.includes(location.pathname)) {
         try {
-
-          const token = localStorage.getItem("jwtToken");
-
-          if (!token) {
-            setUser(null);
-            setIsLogged(false);
-            setLoading(false);
-            return;
-          }
           const res = await AxiosInstance.get("/api/current-user");
 
           const user = {
-            firstname: res.data.first_name,
-            lastname: res.data.last_name,
             username: res.data.username,
             email: res.data.email,
             loggedIn: res.data.logged_in,
           };
 
-          // console.log(user)
+          console.log(user)
 
           if (user) {
             setUser(user);
@@ -49,19 +34,16 @@ const AuthProvider = ({ children }) => {
           }
 
         } catch (err) {
-          console.log(err);
+          console.log(err.response);
           setUser(null);
           setIsLogged(false);
         } finally {
           setLoading(false);
         }
-      } else {
-        setLoading(false);
-      }
     }
 
     fetchUser();
-  }, [location.pathname]);
+  }, []);
 
   const logout = async () => {
     // set the user's logged in status as false in backend
@@ -71,8 +53,9 @@ const AuthProvider = ({ children }) => {
       if(res) {
         setUser(null);
         setIsLogged(false);
-        localStorage.removeItem("jwtToken");
+       nav("/login");
       }
+
       console.log(res.response.data);
     }
     catch (err) {

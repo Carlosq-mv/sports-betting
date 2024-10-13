@@ -13,6 +13,8 @@ require (
 
 require github.com/golang-jwt/jwt/v5 v5.2.1
 
+require github.com/gorilla/websocket v1.5.3 // indirect
+
 require (
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/tmthrgd/go-hex v0.0.0-20190904060850-447a3041c3bc // indirect
